@@ -1,0 +1,108 @@
+# Mississippi News Group RSS Sources
+# Each source should have a name and base_url
+# feed_url will be auto-discovered if not specified
+
+sources:
+  # === NEWS SITES ===
+  - name: Alcorn County News
+    base_url: https://alcornnewsms.com
+    feed_url: https://alcornnewsms.com/feed/
+
+  - name: Benton County News
+    base_url: https://bentonnewsms.com
+    feed_url: https://bentonnewsms.com/feed/
+
+  - name: DeSoto County News
+    base_url: https://desotocountynews.com
+    feed_url: https://desotocountynews.com/feed/
+
+  - name: Mississippi Delta Report
+    base_url: https://mississippideltareport.com
+    feed_url: https://mississippideltareport.com/feed/
+
+  - name: Mississippi News
+    base_url: https://msnewsgroup.com
+    feed_url: https://msnewsgroup.com/feed/
+
+  - name: Oxford News
+    base_url: https://oxfordmsnews.com
+    feed_url: https://oxfordmsnews.com/feed/
+
+  - name: Pontotoc News
+    base_url: https://pontotocnews.com
+    feed_url: https://pontotocnews.com/feed/
+
+  - name: Prentiss County News
+    base_url: https://prentissnews.com
+    feed_url: https://prentissnews.com/feed/
+
+  - name: Tippah County News
+    base_url: https://tippahnews.com
+    feed_url: https://tippahnews.com/feed/
+
+  - name: Tupelo News
+    base_url: https://newstupelo.com
+    feed_url: https://newstupelo.com/feed/
+
+  - name: Union County News
+    base_url: https://unionnewsms.com
+    feed_url: https://unionnewsms.com/feed/
+
+  # === SPORTS SITES ===
+  - name: Alcorn County Sports
+    base_url: https://alcornsportsms.com
+    feed_url: https://alcornsportsms.com/feed/
+
+  - name: Benton County Sports
+    base_url: https://bentonsportsms.com
+    feed_url: https://bentonsportsms.com/feed/
+
+  - name: Lee County Sports
+    base_url: https://leesportsms.com
+    feed_url: https://leesportsms.com/feed/
+
+  - name: Mississippi Sports
+    base_url: https://sportsmississippi.com
+    feed_url: https://sportsmississippi.com/feed/
+
+  - name: Prentiss County Sports
+    base_url: https://prentisssportsms.com
+    feed_url: https://prentisssportsms.com/feed/
+
+  - name: Tippah County Sports
+    base_url: https://tippahsports.com
+    feed_url: https://tippahsports.com/feed/
+
+  - name: Union County Sports
+    base_url: https://unionsportsms.com
+    feed_url: https://unionsportsms.com/feed/
+
+# National news sources (optional - defaults to Google News RSS)
+national_sources:
+  - name: Google News - US
+    feed_url: https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en
+
+# Weather locations (NWS API coordinates)
+weather_locations:
+  - name: North MS (Tupelo)
+    lat: 34.2576
+    lon: -88.7034
+    
+  - name: Central MS (Jackson)
+    lat: 32.2988
+    lon: -90.1848
+    
+  - name: MS Gulf Coast (Biloxi)
+    lat: 30.3960
+    lon: -88.8853
+
+# Gas price cities
+gas_cities:
+  - Southaven, MS
+  - Tupelo, MS
+  - Oxford, MS
+  - Cleveland, MS
+  - Meridian, MS
+  - Jackson, MS
+  - Hattiesburg, MS
+  - Biloxi, MS

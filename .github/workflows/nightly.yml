@@ -1,0 +1,128 @@
+name: MNG Daily Digest
+
+on:
+  # Run every hour to handle DST safely
+  schedule:
+    - cron: '0 * * * *'  # Every hour at :00
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force send (ignore schedule check)'
+        required: false
+        default: false
+        type: boolean
+      dry_run:
+        description: 'Dry run (generate output only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+  TZ: America/Chicago
+
+jobs:
+  generate-and-send:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Download state database
+        uses: actions/download-artifact@v4
+        with:
+          name: newsletter-state
+          path: data/
+        continue-on-error: true  # First run won't have the artifact
+      
+      - name: Check current time in Chicago
+        id: check_time
+        run: |
+          # Get current hour in America/Chicago
+          CURRENT_HOUR=$(TZ=America/Chicago date +%H)
+          echo "Current hour in Chicago: $CURRENT_HOUR"
+          echo "current_hour=$CURRENT_HOUR" >> $GITHUB_OUTPUT
+          
+          # Check if it's 7 PM (19:00)
+          if [ "$CURRENT_HOUR" = "19" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Run digest generator
+        if: steps.check_time.outputs.should_run == 'true' || github.event.inputs.force == 'true' || github.event.inputs.dry_run == 'true'
+        env:
+          # Email configuration
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          
+          # Optional: Alternative email providers
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+          MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+          
+          # Optional: Holiday APIs
+          CALENDARIFIC_API_KEY: ${{ secrets.CALENDARIFIC_API_KEY }}
+          CHECKIDAY_API_KEY: ${{ secrets.CHECKIDAY_API_KEY }}
+          
+          # Optional: News API
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          
+          # Optional: Gas API
+          GAS_API_KEY: ${{ secrets.GAS_API_KEY }}
+        run: |
+          # Determine flags
+          FLAGS=""
+          
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FLAGS="$FLAGS --force"
+          fi
+          
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            FLAGS="$FLAGS --dry-run"
+          fi
+          
+          # Run the generator
+          python main.py $FLAGS --verbose
+      
+      - name: Upload output artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsletter-output-${{ github.run_number }}
+          path: output/
+          retention-days: 30
+      
+      - name: Upload state database
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsletter-state
+          path: data/newsletter.db
+          retention-days: 90
+          overwrite: true
+      
+      - name: Skip notification
+        if: steps.check_time.outputs.should_run == 'false' && github.event.inputs.force != 'true' && github.event.inputs.dry_run != 'true'
+        run: |
+          echo "Current hour (${{ steps.check_time.outputs.current_hour }}) is not the scheduled hour (19)."
+          echo "Skipping digest generation. Use workflow_dispatch with force=true to override."
